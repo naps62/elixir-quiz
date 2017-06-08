@@ -1,50 +1,57 @@
-defmodule Poker.Deck do
-  @type t :: list(card)
-  @type rank :: atom | integer
-  @type suite :: atom
-  @type card :: {rank, suite}
+defmodule Poker.Hand do
+  @moduledoc ~S"""
+  Models a poker hand.
 
-  @suites [:hearts, :spades, :diamonds, :clubs]
-  @ranks [:ace, :king, :queen, :jack] ++ Enum.to_list(10..2)
-
-  @deck {
-    for suite <- @suites, rank <- @ranks do
-      {rank, suite}
-    end
-  }
-
-  @doc """
-  Returns a new shuffled deck of cards
+  Cards within a hand are always guaranteed to be sorted
   """
-  @spec new() :: t
-  def new do
-    @deck
-    |> Enum.shuffle
-  end
 
-  @doc """
-  Compares two cards, returning -1, 0 or 1 based on which is the highest
+  alias Poker.{Card, Deck, HandResult}
+
+  @type t :: list(Card.t)
+
+  @values ~w(straight_flush four_of_a_kind full_house flush straight three_of_a_kind two_pair high_card)a
+
+  @doc ~S"""
+  Creates a new poker hand
+  """
+  def new(), do: []
+
+  @doc ~S"""
+  Deals a new card to a hand
 
   ## Examples
 
-      iex> Poker.Deck.compare({:ace, :spades}, {:king, :spades})
-      -1
-
-      iex> Poker.Deck.compare({:queen, :hearts}, {:queen, :diamonds})
-      0
-
-      iex> Poker.Deck.compare({3, :clubs}, {5, :hearts})
-      1
+      iex> card = Poker.Card.new(:ace, :spades)
+      iex> hand = Poker.Hand.new()
+      iex> Poker.Hand.deal(hand, card)
+      [{:ace, :spades}]
   """
-  @spec compare(card, card) :: integer
-  def compare({a, _}, {b, _}) do
-    ia = Enum.find_index(@ranks, &(&1 == a))
-    ib = Enum.find_index(@ranks, &(&1 == b))
+  @spec deal(t, Card.t) :: t
+  def deal(hand, card), do: Deck.sort_cards([card | hand])
 
-    cond do
-      ia < ib -> -1
-      ia > ib -> 1
-      true -> 0
-    end
+  @doc ~S"""
+  Calculates a numerical value for the hand, based on it's result name
+
+  The higher the number, the more valuable the hand is
+  """
+  @spec numerical_value(t) :: integer
+  def numerical_value(hand) do
+    named_value = value(hand)
+
+    Enum.find_index(@values, &(&1 == named_value))
   end
+
+  @doc ~S"""
+  Calculates a named value for the hand
+  """
+  @spec value(t) :: atom
+  def value(hand) do
+    HandResult.calculate(hand)
+  end
+
+  @doc ~S"""
+  Returns the list of cards for a hand
+  """
+  @spec cards(t) :: list(Card.t)
+  def cards(hand), do: hand
 end
