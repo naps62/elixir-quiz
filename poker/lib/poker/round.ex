@@ -1,7 +1,7 @@
 defmodule Poker.Round do
-  alias Poker.{Hand, Card, Deck}
+  alias Poker.{Hand, Deck}
 
-  @type t :: {list(%{required(atom) => Hand.t}), Deck.t}
+  @type t :: {%{required(atom) => Hand.t}, Deck.t}
 
   @type player :: atom
 
@@ -52,9 +52,12 @@ defmodule Poker.Round do
   @spec winner(t) :: player
   def winner({players, _}) do
     players
-    |> Enum.max_by(fn({player, hand}) ->
-      Poker.Hand.value(hand)
+    |> Stream.map(fn({player, hand}) ->
+      {player, hand, Poker.Hand.value(hand)}
     end)
-    |> elem(0)
+    |> IO.inspect
+    |> Enum.max_by(fn({_player, _hand, value}) ->
+      Poker.HandResult.numerical_value(value)
+    end)
   end
 end

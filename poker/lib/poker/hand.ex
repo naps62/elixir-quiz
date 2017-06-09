@@ -9,8 +9,6 @@ defmodule Poker.Hand do
 
   @type t :: list(Card.t)
 
-  @values ~w(straight_flush four_of_a_kind full_house flush straight three_of_a_kind two_pair high_card)a
-
   @doc ~S"""
   Creates a new poker hand
   """
@@ -30,23 +28,11 @@ defmodule Poker.Hand do
   def deal(hand, card), do: Deck.sort_cards([card | hand])
 
   @doc ~S"""
-  Calculates a numerical value for the hand, based on it's result name
-
-  The higher the number, the more valuable the hand is
-  """
-  @spec numerical_value(t) :: integer
-  def numerical_value(hand) do
-    named_value = value(hand)
-
-    Enum.find_index(@values, &(&1 == named_value))
-  end
-
-  @doc ~S"""
   Calculates a named value for the hand
   """
   @spec value(t) :: atom
   def value(hand) do
-    HandResult.calculate(hand)
+    HandResult.value(hand)
   end
 
   @doc ~S"""

@@ -41,9 +41,9 @@ defmodule Poker.Deck do
       false
   """
   @spec compare(Card.t, Card.t) :: boolean
-  def compare(a, b) do
-    ia = Enum.find_index(@ranks, &(Card.rank(a) == &1))
-    ib = Enum.find_index(@ranks, &(Card.rank(b) == &1))
+  def compare({r1, _}, {r2, _}) do
+    ia = Enum.find_index(@ranks, &(r1 == &1))
+    ib = Enum.find_index(@ranks, &(r2 == &1))
 
     ia <= ib
   end
@@ -53,7 +53,7 @@ defmodule Poker.Deck do
   """
   @spec sort_cards(list(Card.t)) :: list(Card.t)
   def sort_cards(cards) do
-    cards |> Enum.sort_by(&compare/2)
+    cards |> Enum.sort(&compare/2)
   end
 
   @doc ~S"""
@@ -85,7 +85,7 @@ defmodule Poker.Deck do
   """
   @spec cards_in_sequence?(list(Card.t)) :: boolean
   def cards_in_sequence?([]), do: true
-  def cards_in_sequence?([card]), do: true
+  def cards_in_sequence?([_card]), do: true
   def cards_in_sequence?([{:ace, _}, {:king, _} = c2 | t]), do:
     cards_in_sequence?([c2 | t])
   def cards_in_sequence?([{2, _}, {:ace, _} = c2 | t]), do:
