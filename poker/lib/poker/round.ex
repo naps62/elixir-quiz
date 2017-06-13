@@ -55,7 +55,6 @@ defmodule Poker.Round do
     |> Stream.map(fn({player, hand}) ->
       {player, hand, Poker.Hand.value(hand)}
     end)
-    |> IO.inspect
     |> Enum.max_by(fn({_player, _hand, value}) ->
       Poker.HandResult.numerical_value(value)
     end)

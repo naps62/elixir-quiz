@@ -5,8 +5,6 @@ defmodule Poker.HandResult do
 
   @type t :: %__MODULE__{result: atom, cards: list(Card.t)} | nil
 
-  @results Enum.reverse(~w(straight_flush four_of_a_kind full_house flush straight three_of_a_kind two_pair one_pair high_card)a)
-
   @moduledoc ~S"""
   Handles the calculation of the value of a poker hand
   """
@@ -32,22 +30,6 @@ defmodule Poker.HandResult do
     Enum.find_index(@values, &(&1 == result))
   def numerical_value(hand), do:
     hand |> value |> numerical_value
-
-  @doc ~S"""
-  Gives the numerical value of a given result. For example, a high_card has the relative value 0, and a one_pair has a value of 1, being the next best thing to a high_card
-
-  ## Examples
-
-      iex> Poker.HandResult.numerical_value({:high_card, []})
-      0
-
-      iex> Poker.HandResult.numerical_value({:straight_flush, []})
-      8
-  """
-  @spec numerical_value(t) :: integer
-  def numerical_value({result, _cards}), do:
-    @results
-    |> Enum.find_index(fn(possible_result) -> possible_result == result end)
 
   @doc ~S"""
   Checks if a hand is a straight flush
@@ -178,7 +160,7 @@ defmodule Poker.HandResult do
       iex> alias Poker.Card
       iex> hand = [Card.new(:ace, :spades), Card.new(:ace, :hearts), Card.new(2, :clubs), Card.new(:jack, :diamonds), Card.new(:jack, :hearts)]
       iex> Poker.HandResult.two_pair(hand)
-      %Poker.HandResult{result: :two_pair, cards: [{:jack, :diamonds}, {:jack, :hearts}, {:ace, :spades}, {:ace, :hearts}]}
+      %Poker.HandResult{result: :two_pair, cards: [{:ace, :spades}, {:ace, :hearts}, {:jack, :diamonds}, {:jack, :hearts}]}
   """
   @spec two_pair(Hand.t) :: t
   def two_pair(hand) do
@@ -196,16 +178,16 @@ defmodule Poker.HandResult do
   ## Examples
 
       iex> alias Poker.Card
-      iex> hand = [Card.new(:ace, :spades), Card.new(:ace, :hearts), Card.new(2, :clubs), Card.new(3, :diamonds), Card.new(8, :hearts)]
+      iex> hand = [Card.new(:ace, :spades), Card.new(:ace, :hearts), Card.new(8, :clubs), Card.new(3, :diamonds), Card.new(2, :hearts)]
       iex> Poker.HandResult.one_pair(hand)
-      %Poker.HandResult{result: :pair, cards: [{:ace, :spades}, {:ace, :hearts}, {8, :hearts}, {3, :diamonds}, {2, :clubs}]}
+      %Poker.HandResult{result: :one_pair, cards: [{:ace, :spades}, {:ace, :hearts}, {8, :clubs}, {3, :diamonds}, {2, :hearts}]}
   """
   @spec one_pair(Hand.t) :: boolean
   def one_pair(hand) do
     if rank_counts(hand) == [2, 1, 1, 1] and not Deck.cards_in_sequence?(Hand.cards(hand)) do
       pair_and_rest = cards_by_rank(hand) |> Enum.map(&elem(&1, 1)) |> Enum.concat
 
-      %__MODULE__{result: :pair, cards: pair_and_rest}
+      %__MODULE__{result: :one_pair, cards: pair_and_rest}
     end
   end
 
@@ -246,8 +228,7 @@ defmodule Poker.HandResult do
     hand
     |> Hand.cards
     |> Enum.group_by(&Card.rank/1)
-    |> Enum.sort_by(fn({_rank, cards}) -> length(cards) end)
-    |> Enum.reverse
+    |> Enum.sort(&Poker.Deck.compare/2)
   end
 
   @spec rank_counts(Hand.t) :: list(integer)
