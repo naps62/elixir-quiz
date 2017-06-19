@@ -1,4 +1,6 @@
 defmodule Poker.Hand do
+  defstruct cards: []
+
   @moduledoc ~S"""
   Models a poker hand.
 
@@ -7,12 +9,12 @@ defmodule Poker.Hand do
 
   alias Poker.{Card, Deck, HandResult}
 
-  @type t :: list(Card.t)
+  @type t :: %__MODULE__{cards: list(Card.t)}
 
   @doc ~S"""
   Creates a new poker hand
   """
-  def new(), do: []
+  def new(), do: %__MODULE__{cards: []}
 
   @doc ~S"""
   Deals a new card to a hand
@@ -25,7 +27,8 @@ defmodule Poker.Hand do
       [{:ace, :spades}]
   """
   @spec deal(t, Card.t) :: t
-  def deal(hand, card), do: Deck.sort_cards([card | hand])
+  def deal(%__MODULE__{cards: cards} = hand, card), do:
+    %__MODULE__{hand | cards: Deck.sort_cards([card | cards])}
 
   @doc ~S"""
   Calculates a named value for the hand
